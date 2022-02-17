@@ -23,8 +23,25 @@ app.all("*",function(req,res,next){
       next();
 });
 
-app.get('/test', function(req, res, next) {
-    res.send({"abc":"abc"});
+// 最后版本信息
+app.get('/lastVersion', function(req, res, next) {
+  res.send({"date":"2022-01-01","version":"V1.1","url":"app-debug.apk","type":"android"});
+});
+
+// 报价信息
+app.get('/quotations', function(req, res, next) {
+  res.send([{"id":"btc/usdt","price":"2.1","change":-0.5}]);
+});
+
+
+// 报价信息
+app.get('/quotations', function(req, res, next) {
+    res.send([{"id":"btc/usdt","price":"2.1","change":-0.5}]);
+});
+
+// 轮播图
+app.get('/banners', function(req, res, next) {
+  res.send([{"id":"1","image":"banners1.jpg","title":"osb上线了"}]);
 });
 
 let server = app.listen(1234, function() {

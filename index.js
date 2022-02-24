@@ -9,7 +9,6 @@ const app = express();
 app.use(express.static(__dirname + '/static', {index: 'help.html'}));
 app.use(bodyParser.json());
 
-
 app.all("*",function(req,res,next){
   //设置允许跨域的域名，*代表允许任意域名跨域
   res.header("Access-Control-Allow-Origin","*");
@@ -31,12 +30,6 @@ app.get('/lastVersion', function(req, res, next) {
 // 报价信息
 app.get('/quotations', function(req, res, next) {
   res.send([{"id":"btc/usdt","price":"2.1","change":-0.5}]);
-});
-
-
-// 报价信息
-app.get('/quotations', function(req, res, next) {
-    res.send([{"id":"btc/usdt","price":"2.1","change":-0.5}]);
 });
 
 // 轮播图

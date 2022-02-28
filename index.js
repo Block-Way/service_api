@@ -24,7 +24,7 @@ app.all("*",function(req,res,next){
 
 // 最后版本信息
 app.get('/lastVersion', function(req, res, next) {
-  res.send({"date":"2022-01-01","version":"V1.1","url":"app-debug.apk","type":"android"});
+  res.send([{"date":"2022-01-01","version":"V1.1","url":"app-debug.apk","type":"android"}]);
 });
 
 // 报价信息

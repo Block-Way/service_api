@@ -29,15 +29,54 @@ app.get('/lastVersion', function(req, res, next) {
 
 // 报价信息
 app.get('/quotations', function(req, res, next) {
-  res.send([{"id":"btc/usdt","price":"2.1","change":-0.5}]);
+  console.log("quotations");
+  res.send([
+    {
+      "tradePairId": "btca/usdt",
+      "precision": 8,
+      "price": 2728.13,
+      "price24h": 34670.32
+    },
+    {
+      "tradePairId": "bbc/usdt",
+      "precision": 8,
+      "price": 12728.13,
+      "price24h": 34670.32
+    },
+    {
+      "tradePairId": "btc/usdt",
+      "precision": 8,
+      "price": 12728.13,
+      "price24h": 34670.32
+    },
+    {
+      "tradePairId": "eth/usdt",
+      "precision": 8,
+      "price": 7728.13,
+      "price24h": 34670.32
+    },
+    {
+      "tradePairId": "bnb/usdt",
+      "precision": 8,
+      "price": 7728.13,
+      "price24h": 34670.32
+    }
+  ]);
 });
 
 // 轮播图
 app.get('/banners', function(req, res, next) {
-  res.send([{"id":"1","image":"banners1.jpg","title":"osb上线了"}]);
+  console.log("banners");
+  //'id': 1,
+  //'type': 'type1',
+  //'title': 'title1',
+  //'content': 'content1',
+  //'img': '350x150.png',
+  //'bg_img': '350x150.png'
+  res.send([{"id":1,"type": "type1","title": "title1","content": "content1","img":"350x150.png","bg_img": "350x150.png"}]);
 });
 
-let server = app.listen(1234, function() {
+let server = app.listen(80, function() {
   let host = server.address().address;
   let port = server.address().port;
   console.log('http://%s:%s', host, port);

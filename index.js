@@ -58,8 +58,16 @@ app.get('/quotations', async function(req, res, next) {
   res.send(JSON.parse(dataString));
 });
 
-app.post('/register', function(req, res, next) {
-  let bbc_addr = '';
+app.get('/banners', async function(req, res, next) {
+  console.log('banners');
+  let sql = 'SELECT * FROM banners';
+  let ret = await query(sql,[req.query.walletId]);
+  let dataString = JSON.stringify(ret);
+  res.send(JSON.parse(dataString));
+});
+
+app.post('/register', async function(req, res, next) {
+  let hah_addr = '';
   let eth_addr = '';
   let btc_addr = '';
   for (let n = 0; n < req.body.params.wallet.length; n++) {
@@ -70,50 +78,29 @@ app.post('/register', function(req, res, next) {
       case 'ETH':
         eth_addr = req.body.params.wallet[n].address;
         break;
-      case 'BBC':
-        bbc_addr = req.body.params.wallet[n].address;
+      case 'HAH':
+        hah_addr = req.body.params.wallet[n].address;
         break;
     }
   }
   let walletId = req.body.params.hash;
   let sql = 'select * from addr where walletId = ?';
-  btca_conn.query(sql,[walletId],function(err,result){
-    if (err) {
-      console.log('register','err');
-      res.json({'error':err});
-      return;
-    }
-    if (result.length == 0) {
-      let pub = utils.Addr2Hex(bbc_addr);
-      pub = pub.subarray(1);
-      pub.reverse();
-      request({
-        url: url,
-        method: 'POST',
-        json: true,
-        body:{'id':2,'method':'importpubkey','jsonrpc':'2.0','params':{'pubkey': pub.toString('hex')}}
-      },function(error, response, body) {
-        sql = 'insert into addr(walletId,bbc_addr,eth_addr,btc_addr)values(?,?,?,?)';
-        btca_conn.query(sql,[walletId,bbc_addr,eth_addr,btc_addr],function(err,result) {
-          console.log('register','Add');
-          res.json({'status':'add'});
-        });
-      });
-    } else {
-      console.log('register','OK');
-      res.json({'status':'OK'});
-    }
-  });
+  let result = await query(sql,[walletId]);
+  if (result.length == 0) {
+    let pub = utils.Addr2Hex(hah_addr);
+    pub = pub.subarray(1);
+    pub.reverse();
+    await hah_method('importpubkey',{'pubkey': pub.toString('hex')});
+    sql = 'insert into addr(walletId,hah_addr,eth_addr,btc_addr)values(?,?,?,?)';
+    await query(sql,[walletId,hah_addr,eth_addr,btc_addr]);
+    console.log('register','Add');
+    res.json({'status':'add'});
+  } else {
+    console.log('register','OK');
+    res.json({'status':'OK'});
+  }
 });
 
-
-app.get('/banners', async function(req, res, next) {
-  console.log('banners');
-  let sql = 'SELECT * FROM banners';
-  let ret = await query(sql,[req.query.walletId]);
-  let dataString = JSON.stringify(ret);
-  res.send(JSON.parse(dataString));
-});
 
 let server = app.listen(7711, function() {
   let host = server.address().address;

@@ -4,7 +4,6 @@ const mysql = require('mysql');
 const request = require('request');
 const app = express();
 const utils = require('./utils.js');
-const { json } = require('express/lib/response');
 
 const url = 'http://127.0.0.1:8604';
 
@@ -57,7 +56,7 @@ app.get('/quotations', async function(req, res, next) {
   let sql = 'SELECT tradePairId,price,`precision`,price24h FROM quotations';
   let ret = await query(sql,[req.query.walletId]);
   let dataString = JSON.stringify(ret);
-  res.send(JSON.parse(dataString));
+  res.json(JSON.parse(dataString));
 });
 
 app.get('/banners', async function(req, res, next) {
@@ -65,7 +64,7 @@ app.get('/banners', async function(req, res, next) {
   let sql = 'SELECT * FROM banners';
   let ret = await query(sql,[req.query.walletId]);
   let dataString = JSON.stringify(ret);
-  res.send(JSON.parse(dataString));
+  res.json(JSON.parse(dataString));
 });
 
 app.post('/register', async function(req, res, next) {
@@ -125,10 +124,19 @@ app.get('/transaction', async function(req, res, next) {
           where (`to` = ?) or (`from` = ?) order by id desc limit 10";
   let ret = await query(sql,[req.query.address,req.query.address]);
   let dataString = JSON.stringify(ret);
-  res.send(JSON.parse(dataString));
+  res.json(JSON.parse(dataString));
 });
 
-let server = app.listen(7711, function() {
+// 得到交易信息
+app.get('/fee', async function(req, res, next) {
+  console.log('fee',req.query.address);
+  let ret = await hah_method('getbalance',{'address':req.query.address});
+  let json = {'nonce' : parseFloat(ret[0].nonce),'gas_price': 10000,'gas_limit': 10000};
+  res.json(json);
+});
+
+
+let server = app.listen(8082, function() {
   let host = server.address().address;
   let port = server.address().port;
   console.log('http://%s:%s', host, port);

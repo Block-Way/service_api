@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const request = require('request');
 const app = express();
+const utils = require('./utils.js');
+const { json } = require('express/lib/response');
 
 const url = 'http://127.0.0.1:8604';
 
@@ -67,6 +69,7 @@ app.get('/banners', async function(req, res, next) {
 });
 
 app.post('/register', async function(req, res, next) {
+
   let hah_addr = '';
   let eth_addr = '';
   let btc_addr = '';
@@ -78,7 +81,7 @@ app.post('/register', async function(req, res, next) {
       case 'ETH':
         eth_addr = req.body.params.wallet[n].address;
         break;
-      case 'HAH':
+      case 'BBC':
         hah_addr = req.body.params.wallet[n].address;
         break;
     }
@@ -101,6 +104,29 @@ app.post('/register', async function(req, res, next) {
   }
 });
 
+
+app.get('/balance', async function(req, res, next) {
+  //http://127.0.0.1:7711/balance?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+  //77f2b1217377f62cbb34c5b72b63c6c17fdb5e9e0b6173b4edcb19d03922c0f5
+  //res.json({'address': req.query.address,'symbol': req.query.symbol});
+  console.log('balance',req.query.symbol);
+  if (req.query.symbol == 'HAH') {
+    let ret = await hah_method('getbalance',{'address':req.query.address});
+    res.json({'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout),'balance': parseFloat(ret[0].avail)});
+  } else {
+    res.json({'unconfirmed': 0,'balance': 0});
+  }
+});
+
+// http://127.0.0.1:7711/transaction?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+app.get('/transaction', async function(req, res, next) {
+  console.log('transaction',req.query.address);
+  let sql = "select txid as `hash`,`from` as fromAddress,`to` as toAddress,transtime as `timestamp`,1 as confirmed,fee as txFee, amount from tx \
+          where (`to` = ?) or (`from` = ?) order by id desc limit 10";
+  let ret = await query(sql,[req.query.address,req.query.address]);
+  let dataString = JSON.stringify(ret);
+  res.send(JSON.parse(dataString));
+});
 
 let server = app.listen(7711, function() {
   let host = server.address().address;

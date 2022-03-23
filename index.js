@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const request = require('request');
 const app = express();
 const utils = require('./utils.js');
+const lib = require('./lib.js')
 
 const url = 'http://127.0.0.1:8604';
 
@@ -20,7 +21,7 @@ conn.connect();
 app.use(express.static(__dirname + '/static', {index: 'help.html'}));
 app.use(bodyParser.json());
 
-const frok = '00000000a137256624bda82aec19645b1dd8d41311ceac9b5c3e49d2822cd49f';
+const g_frok = '00000000769872b2afcc290a025b23362202fc3ba715c7fc27bd96b2aec73e4b';
 
 function query(sql,params) {
   return new Promise(fun => {
@@ -111,7 +112,9 @@ app.get('/balance', async function(req, res, next) {
   console.log('balance',req.query.symbol);
   if (req.query.symbol == 'HAH') {
     let ret = await hah_method('getbalance',{'address':req.query.address});
-    res.json({'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout),'balance': parseFloat(ret[0].avail)});
+    let json = {'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout),'balance': parseFloat(ret[0].avail)};
+    console.log(json);
+    res.json(json);
   } else {
     res.json({'unconfirmed': 0,'balance': 0});
   }
@@ -135,6 +138,37 @@ app.get('/fee', async function(req, res, next) {
   res.json(json);
 });
 
+app.post('/createtransaction', function(req, res, next) {
+  let ts = req.body.time;
+  let fork = req.body.fork;
+  if (fork == undefined) {
+    fork = g_frok;
+  }
+  let nonce = req.body.nonce;
+  let from = req.body.from;
+  let to = req.body.to;
+  let amount = req.body.amount;
+  let gasPrice = req.body.gasprice;
+  if (gasPrice == undefined) {
+    gasPrice = "0.0000010000";
+  }
+  let gasLimit = req.body.gaslimit;
+  if (gasLimit == undefined) {
+    gasLimit = 10000;
+  }
+  let data = req.body.data;
+  if (data == undefined) {
+    data = '00';
+  }
+  let ret = lib.GetTx(ts,fork,nonce,from,to,amount,gasPrice,gasLimit,data);
+  res.json(ret);
+});
+
+app.get('/sendtransaction', async function(req, res, next) {
+  console.log('sendtransaction',req.query.hex);
+  let ret = await hah_method('sendtransaction',{'txdata': req.query.hex});
+  res.send(ret);
+});
 
 let server = app.listen(8082, function() {
   let host = server.address().address;

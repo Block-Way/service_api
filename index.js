@@ -6,7 +6,7 @@ const app = express();
 const utils = require('./utils.js');
 const lib = require('./lib.js')
 
-const url = 'http://127.0.0.1:8604';
+const url = 'http://127.0.0.1:8814';
 
 const conn = mysql.createConnection({
   host: '127.0.0.1',
@@ -21,7 +21,7 @@ conn.connect();
 app.use(express.static(__dirname + '/static', {index: 'help.html'}));
 app.use(bodyParser.json());
 
-const g_frok = '00000000769872b2afcc290a025b23362202fc3ba715c7fc27bd96b2aec73e4b';
+const g_frok = '0000000027734445141a588af514fba7f24869c830399fe09a1355815b60040d';
 
 function query(sql,params) {
   return new Promise(fun => {
@@ -170,7 +170,7 @@ app.get('/sendtransaction', async function(req, res, next) {
   res.send(ret);
 });
 
-let server = app.listen(8082, function() {
+let server = app.listen(8080, function() {
   let host = server.address().address;
   let port = server.address().port;
   console.log('http://%s:%s', host, port);

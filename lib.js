@@ -1,5 +1,5 @@
 const utils = require('./utils.js');
-const bignum = require('bignum');
+//onst bignum = require('bignum');
 const blake = require('blakejs');
 
 function LenHex(n) {

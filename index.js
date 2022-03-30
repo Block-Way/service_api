@@ -41,6 +41,40 @@ where (\`to\`=? or form=?) order by t.id desc limit 10`
   });
 });
 
+app.post('/createtransaction', function(req, res, next) {
+  let ts = req.body.time;
+  let fork = req.body.fork;
+  if (fork == undefined) {
+    fork = g_frok;
+  }
+  let nonce = req.body.nonce;
+  let from = req.body.from;
+  let to = req.body.to;
+  let amount = req.body.amount;
+  let gasPrice = req.body.gasprice;
+  if (gasPrice == undefined) {
+    gasPrice = "0.0000010000";
+  }
+  let gasLimit = req.body.gaslimit;
+  if (gasLimit == undefined) {
+    gasLimit = 10000;
+  }
+  let data = req.body.data;
+  if (data == undefined) {
+    data = '00';
+  }
+  let ret = lib.GetTx(ts,fork,nonce,from,to,amount,gasPrice,gasLimit,data);
+  res.json(ret);
+});
+
+app.post('/GetVote', function(req, res, next) {
+  let delegate = req.body.delegate;
+  let owner = req.body.owner;
+  let rewardmode = req.body.rewardmode;
+  let ret = lib.GetVote(delegate,owner,rewardmode);
+  res.json(ret);
+});
+
 let server = app.listen(7711, function() {
   let host = server.address().address;
   let port = server.address().port;

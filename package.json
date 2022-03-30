@@ -13,8 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "blakejs": "^1.1.1",
-    "express": "^4.17.1",
+    "bignum": "^0.13.1",
+    "blakejs": "^1.2.1",
+    "express": "^4.17.3",
     "mysql": "^2.18.1",
     "request": "^2.88.2"
   }

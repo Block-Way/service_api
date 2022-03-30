@@ -95,6 +95,7 @@ function Addr2Hex(addr) {
         md33[0] = 2;
     }
     Base32Decode(strBase32, md33.subarray(1));
+    md33.subarray(1).reverse();
     return md33;
 };
 

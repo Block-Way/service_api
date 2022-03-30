@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+'''
+完成基本的交易操作
+'''
 import requests
 import json
 import ed25519

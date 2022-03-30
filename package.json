@@ -1,5 +1,5 @@
 {
-  "name": "service_api",
+  "name": "web_api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -14,9 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "bignum": "^0.13.1",
-    "blakejs": "^1.1.1",
-    "express": "^4.17.1",
-    "moment": "^2.29.1",
+    "blakejs": "^1.2.1",
+    "express": "^4.17.3",
     "mysql": "^2.18.1",
     "request": "^2.88.2"
   }

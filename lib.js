@@ -2,6 +2,24 @@ const utils = require('./utils.js')
 const bignum = require('bignum');
 const blake = require('blakejs')
 
+function LenHex(n) {
+	if (n < 0xFD) {
+		return Buffer.from([n]);
+	} else if (n <= 0xFFFF) {
+		const buf_n = Buffer.allocUnsafe(2);
+    	buf_n.writeUInt16LE(n);
+		return Buffer.from([0xfd,buf_n[0],buf_n[1]]);
+	} else if (n <= 0xFFFFFFFF) {
+		const buf_n = Buffer.allocUnsafe(4);
+    	buf_n.writeUInt32LE(n);
+		return Buffer.concat([new Uint8Array([0xfe]),buf_n]);
+	} else {
+		const buf_n = Buffer.allocUnsafe(8);
+    	buf_n.writeBigUInt64LE(BigInt(n));
+		return Buffer.concat([new Uint8Array([0xff]),buf_n]);
+	}
+}
+
 function int2hex(str_n) {
     let n = bignum(str_n);
     let temp_buff = n.toBuffer();

@@ -21,25 +21,123 @@ app.use(bodyParser.json());
 
 browser.Load(app,conn);
 
-app.get('/transctions/:addr', function(req, res, next) {
-  console.log("transctions.",req.params.addr);
-  let sql = `select t.txid, t.block_hash, t.form as \`from\`, t.\`to\`, format(t.amount,4) as amount,
-  format(t.free,4) as fee,
-  (case when t.form =? and left(t.\`to\`,4)<>'20w0' then 2  
-        when t.\`to\` =? and left(t.form,4)<>'20w0' then 4 end) as flag,
-b.height,FROM_UNIXTIME(b.time,'%m-%d %H:%i:%s') as time
-from Tx t join Block b on b.\`hash\` = t.block_hash
-where (\`to\`=? or form=?) order by t.id desc limit 10`
-  let params = [req.params.addr,req.params.addr,req.params.addr,req.params.addr];
-  conn.query(sql,params,function(err,result){
-    if(err){
-      res.json({'error':err});
-      return;
-    }
-    let dataString =JSON.stringify(result);
-    res.send(JSON.parse(dataString));
+const g_frok = '000000004133280e17d29214061af6b80e3e9a3766e4e3169e3fe6db344b58c7';
+
+function query(sql,params) {
+  return new Promise(fun => {
+    conn.query(sql,params,function(err,result) {
+      if (err) {
+        return;
+      }
+      fun(result);
+    });
   });
+};
+
+function hah_method(method,params) {
+  return new Promise(fun => {
+    request({
+        url: url,
+        method: 'POST',
+        json: true,
+        body:{'id':1,'method' : method,'jsonrpc':'2.0','params' : params}},
+      function(error, response, body) {
+        if (body.error) {
+          return;
+        } else {
+          fun(body.result);
+        }
+      });
+  });  
+}
+
+// http://127.0.0.1:7711/quotations
+app.get('/quotations', async function(req, res, next) {
+  console.log('quotations');
+  let sql = 'SELECT tradePairId,price,`precision`,price24h FROM quotations';
+  let ret = await query(sql,[req.query.walletId]);
+  let dataString = JSON.stringify(ret);
+  res.json(JSON.parse(dataString));
 });
+
+app.get('/banners', async function(req, res, next) {
+  console.log('banners');
+  let sql = 'SELECT * FROM banners';
+  let ret = await query(sql,[req.query.walletId]);
+  let dataString = JSON.stringify(ret);
+  res.json(JSON.parse(dataString));
+});
+
+app.post('/register', async function(req, res, next) {
+
+  let hah_addr = '';
+  let eth_addr = '';
+  let btc_addr = '';
+  for (let n = 0; n < req.body.params.wallet.length; n++) {
+    switch (req.body.params.wallet[n].chain) {
+      case 'BTC':
+        btc_addr = req.body.params.wallet[n].address;
+        break;
+      case 'ETH':
+        eth_addr = req.body.params.wallet[n].address;
+        break;
+      case 'BBC':
+        hah_addr = req.body.params.wallet[n].address;
+        break;
+    }
+  }
+  let walletId = req.body.params.hash;
+  let sql = 'select * from addr where walletId = ?';
+  let result = await query(sql,[walletId]);
+  if (result.length == 0) {
+    let pub = utils.Addr2Hex(hah_addr);
+    pub = pub.subarray(1);
+    pub.reverse();
+    await hah_method('importpubkey',{'pubkey': pub.toString('hex')});
+    sql = 'insert into addr(walletId,hah_addr,eth_addr,btc_addr)values(?,?,?,?)';
+    await query(sql,[walletId,hah_addr,eth_addr,btc_addr]);
+    console.log('register','Add');
+    res.json({'status':'add'});
+  } else {
+    console.log('register','OK');
+    res.json({'status':'OK'});
+  }
+});
+
+
+app.get('/balance', async function(req, res, next) {
+  //http://127.0.0.1:7711/balance?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+  //77f2b1217377f62cbb34c5b72b63c6c17fdb5e9e0b6173b4edcb19d03922c0f5
+  //res.json({'address': req.query.address,'symbol': req.query.symbol});
+  console.log('balance',req.query.symbol);
+  if (req.query.symbol == 'HAH') {
+    let ret = await hah_method('getbalance',{'address':req.query.address});
+    let json = {'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout),'balance': parseFloat(ret[0].avail)};
+    console.log(json);
+    res.json(json);
+  } else {
+    res.json({'unconfirmed': 0,'balance': 0});
+  }
+});
+
+// http://127.0.0.1:7711/transaction?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+app.get('/transaction', async function(req, res, next) {
+  console.log('transaction',req.query.address);
+  let sql = "select txid as `hash`,`from` as fromAddress,`to` as toAddress,transtime as `timestamp`,1 as confirmed,fee as txFee, amount from tx \
+          where (`to` = ?) or (`from` = ?) order by id desc limit 10";
+  let ret = await query(sql,[req.query.address,req.query.address]);
+  let dataString = JSON.stringify(ret);
+  res.json(JSON.parse(dataString));
+});
+
+// 得到交易信息
+app.get('/fee', async function(req, res, next) {
+  console.log('fee',req.query.address);
+  let ret = await hah_method('getbalance',{'address':req.query.address});
+  let json = {'nonce' : parseFloat(ret[0].nonce),'gas_price': 10000,'gas_limit': 10000};
+  res.json(json);
+});
+
 
 app.post('/createtransaction', function(req, res, next) {
   let ts = req.body.time;

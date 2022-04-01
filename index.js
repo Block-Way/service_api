@@ -139,6 +139,11 @@ app.get('/fee', async function (req, res, next) {
   res.json(json);
 });
 
+app.get('/sendtransaction', async function(req, res, next) {
+  console.log('sendtransaction',req.query.hex);
+  let ret = await chain_method('sendtransaction',{'txdata': req.query.hex});
+  res.send(ret);
+});
 
 app.post('/createtransaction', function (req, res, next) {
   let ts = req.body.time;

@@ -1,16 +1,4 @@
 function Load(app,conn) {
-    app.get('/Info',function(req,res,next) {
-        let sql='select max_coin_number,current_coin_numner,wallet_number,max_coin_count from Info limit 1';
-        conn.query(sql,function(err,result) {
-          if(err){
-            res.json({'error':err});
-            return;
-          }
-          let dataString =JSON.stringify(result);
-          res.send(JSON.parse(dataString));
-        })
-    });
-
     app.post('/rank',function(req,res,next) {
       let params = [];
       let count = 0;
@@ -38,9 +26,22 @@ function Load(app,conn) {
         }
       });
     });
-
+    
     app.get('/newblock/', function(req, res, next) {
       let sql = 'select * from Block where is_useful = 1 order by id desc limit 15';
+      let params = [];
+      conn.query(sql, params, function(err, result) {
+        if (err) {
+          res.json({'error': err});
+          return;
+        }
+        let dataString = JSON.stringify(result);
+        res.send(JSON.parse(dataString));
+      });
+    });
+
+    app.get('/newtx/', function(req, res, next) {
+      let sql = 'select * from Tx order by id desc limit 15';
       let params = [];
       conn.query(sql, params, function(err, result) {
         if (err) {
@@ -115,52 +116,6 @@ function Load(app,conn) {
           });
         }
       });
-
-
-
-    });
-
-    
-    app.get('/newtx/', function(req, res, next) {
-      let sql = 'select * from Tx order by id desc limit 15';
-      let params = [];
-      conn.query(sql, params, function(err, result) {
-        if (err) {
-          res.json({'error': err});
-          return;
-        }
-        let dataString = JSON.stringify(result);
-        res.send(JSON.parse(dataString));
-      });
-    });
-    
-
-    function check_mn(m,n){
-      let regPos = /^\d+$/;
-      if (regPos.test(m) && regPos.test(n)) {
-        if (n - m <= 20) {
-          return true;
-        } 
-      }
-      return false;
-    }
-    
-    app.get('/blocks/:m/:n', function(req, res, next) {
-      if (check_mn(req.params.n,req.params.m) == false){
-        res.json({'error': 'm n parameter error.'});
-        return;
-      }
-      let sql =
-          'select * from Block where is_useful = 1 and height between ? and ?';
-      let params = [req.params.m, req.params.n];
-      conn.query(sql, params, function(err, result) {
-        if (err) {
-          res.json({'error': err});
-          return;
-        }
-        let dataString = JSON.stringify(result);
-        res.send(JSON.parse(dataString));
-      });
     });
 
     app.post('/block/', function(req, res, next) {
@@ -186,22 +141,8 @@ function Load(app,conn) {
           res.send(JSON.parse(dataString));
       });
     });
-    
-    app.get('/blocktx/:hash', function(req, res, next) {
-      let sql = 'select * from Tx where block_hash = ?';
-      let params = [req.params.hash];
-      conn.query(sql, params, function(err, result) {
-        if (err) {
-          res.json({'error': err});
-          return;
-        }
-        let dataString = JSON.stringify(result);
-        res.send(JSON.parse(dataString));
-      });
-    });
-
-
-  app.post('/address/', function(req, res, next) {
+  
+    app.post('/address/', function(req, res, next) {
       let address = req.body.address;
       var count = 0;
       var pagenum = req.body.page;
@@ -264,10 +205,19 @@ function Load(app,conn) {
           });
         }
       });
-  });
+    });
 
-
+    function check_mn(m,n){
+      let regPos = /^\d+$/;
+      if (regPos.test(m) && regPos.test(n)) {
+        if (n - m <= 20) {
+          return true;
+        } 
+      }
+      return false;
     }
+
+}
 
 module.exports = {
   Load: Load

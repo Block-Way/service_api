@@ -176,7 +176,7 @@ app.post('/GetVote', function (req, res, next) {
 
 app.get('/listdelegate', async function (req, res, next) {
   console.log('listdelegate');
-  let sql = "SELECT address,vote,`name` FROM pool";
+  let sql = "SELECT address,votes,`name` FROM pool";
   let ret = await query(sql, []);
   let dataString = JSON.stringify(ret);
   res.json(JSON.parse(dataString));

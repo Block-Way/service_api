@@ -8,7 +8,7 @@ const app = express();
 
 const url = 'http://127.0.0.1:8812';
 const conn = mysql.createConnection({
-  host: '127.0.0.1',
+  host: '119.8.55.78',
   port: '3306',
   user: 'hah',
   password: '1234qwer',
@@ -185,6 +185,33 @@ app.get('/listdelegate', async function (req, res, next) {
   let ret = await query(sql, []);
   let dataString = JSON.stringify(ret);
   res.json(JSON.parse(dataString));
+});
+
+app.get('/listdelegatedetail', async function (req, res, next) {
+  console.log('listdelegatedetail');
+  let count = 0;
+  let pagenum = req.query.page;
+  let pagesize = req.query.pagesize;
+  let sql_count="select count(*) as count from (select client_in as client_address, format(amount,4) as amount,  FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , \
+                 height , 'vote' as voteState from tx where  dpos_in =?  union all   select client_out as client_address, format(amount,4) as amount,  \
+                 FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , height , 'withdrawal' as voteState from tx where  dpos_out =?)a";
+  let ret_count = await query(sql_count,  [req.query.dposAddress, req.query.dposAddress]);
+  var jsonCount= JSON.parse(JSON.stringify(ret_count[0]));
+  count=Number(jsonCount["count"]);  
+  let sql = "select * from (select client_in as client_address, format(amount,4) as amount,  FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , \
+              height , 'vote' as voteState from tx where  dpos_in =?  union all   select client_out as client_address, format(amount,4) as amount,  \
+              FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , height , 'withdrawal' as voteState from tx where  dpos_out =? \
+              )a order by height  limit " + (pagenum-1)*pagesize + "," + pagesize;
+
+  let ret = await query(sql,  [req.query.dposAddress, req.query.dposAddress]);
+  let dataString = JSON.parse(JSON.stringify(ret));
+  var txdata = {
+    total : count,
+    pagenum : pagenum,
+    pagesize : pagesize,
+    data:dataString
+  }; 
+  res.json(txdata);
 });
 
 let server = app.listen(7711, function () {

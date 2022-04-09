@@ -27,6 +27,7 @@ function query(sql, params) {
   return new Promise(fun => {
     conn.query(sql, params, function (err, result) {
       if (err) {
+        fun(err);
         return;
       }
       fun(result);
@@ -44,6 +45,7 @@ function chain_method(method, params) {
     },
       function (error, response, body) {
         if (body.error) {
+          fun(body.error);
           return;
         } else {
           fun(body.result);

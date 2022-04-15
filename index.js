@@ -5,6 +5,8 @@ const request = require('request')
 const lib = require('./lib.js')
 const browser = require('./browser.js')
 const app = express();
+const utils = require('./utils.js')
+const moment = require('moment')
 
 const url = 'http://127.0.0.1:8812';
 const conn = mysql.createConnection({
@@ -70,7 +72,6 @@ app.get('/banners', async function (req, res, next) {
   let dataString = JSON.stringify(ret);
   res.json(JSON.parse(dataString));
 });
-
 app.post('/register', async function (req, res, next) {
 
   let hah_addr = '';
@@ -96,7 +97,7 @@ app.post('/register', async function (req, res, next) {
     let pub = utils.Addr2Hex(hah_addr);
     pub = pub.subarray(1);
     pub.reverse();
-    await hah_method('importpubkey', { 'pubkey': pub.toString('hex') });
+    await chain_method('importpubkey', { 'pubkey': pub.toString('hex') });
     sql = 'insert into addr(walletId,hah_addr,eth_addr,btc_addr)values(?,?,?,?)';
     await query(sql, [walletId, hah_addr, eth_addr, btc_addr]);
     console.log('register', 'Add');
@@ -148,9 +149,10 @@ app.get('/sendtransaction', async function(req, res, next) {
 });
 
 app.post('/createtransaction', function (req, res, next) {
+  console.log('createtransaction begin:', req.body);
   let ts = req.body.time;
   let fork = req.body.fork;
-  if (fork == undefined) {
+  if (fork == undefined || fork == '') {
     fork = g_frok;
   }
   let nonce = req.body.nonce;
@@ -166,10 +168,11 @@ app.post('/createtransaction', function (req, res, next) {
     gasLimit = 10000;
   }
   let data = req.body.data;
-  if (data == undefined) {
+  if (data == undefined || data == '') {
     data = '00';
   }
   let ret = lib.GetTx(ts, fork, nonce, from, to, amount, gasPrice, gasLimit, data);
+  console.log('createtransaction: end:',ret);
   res.json(ret);
 });
 
@@ -199,7 +202,7 @@ app.get('/listdelegatedetail', async function (req, res, next) {
                  FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , height , 'withdrawal' as voteState from tx where  dpos_out =?)a";
   let ret_count = await query(sql_count,  [req.query.dposAddress, req.query.dposAddress]);
   var jsonCount= JSON.parse(JSON.stringify(ret_count[0]));
-  count=Number(jsonCount["count"]);  
+  count = Number(jsonCount["count"]);  
   let sql = "select * from (select client_in as client_address, format(amount,4) as amount,  FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , \
               height , 'vote' as voteState from tx where  dpos_in =?  union all   select client_out as client_address, format(amount,4) as amount,  \
               FROM_UNIXTIME(transtime,'%Y-%m-%d %H:%i:%s') as time , height , 'withdrawal' as voteState from tx where  dpos_out =? \
@@ -215,6 +218,61 @@ app.get('/listdelegatedetail', async function (req, res, next) {
   }; 
   res.json(txdata);
 });
+
+// http://127.0.0.1:7711/mint?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
+app.get('/mint', async function (req, res, next) {
+  console.log('mint');
+  let sql = 'call mint(?)';
+  let ret = await query(sql,  [/*req.query.addr*/'1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws']);
+  ret = JSON.parse(JSON.stringify(ret[0][0]));
+  ret = {
+    'promotion_reward':ret.general_reward.toString(),
+    'stake_reward': ret.exp_reward.toString(),
+    'this_stake_reward'  : '0',
+    'this_balance': '0',
+    'min_balance': '0',
+    'best_balance': ret.max_reward.toString(),
+    'best_balance_reward': ret.min_reward.toString(),
+    'min_balance_reward': '0'
+  };
+  res.json(ret);
+});
+
+// http://127.0.0.1:7711/chart?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
+app.get('/chart', async function (req, res, next) {
+  console.log('chart');
+  let sql = "select amount,transtime,height from Tx where client_in = ? and `type` = 'vote-reward' order by id desc limit 15";
+  let ret = await query(sql,  [req.query.addr]);
+  ret = JSON.parse(JSON.stringify(ret));
+  let data = [];
+  for (let index = 0; index < ret.length; index++) {
+    const element = ret[index];
+    data.push({'balance' : element.transtime.toString(),'reward' : element.amount.toString(),'user_balance':false});
+  }
+  res.json(data);
+});
+
+// general_reward
+// http://127.0.0.1:7711/general_reward?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
+app.get('/general_reward', async function (req, res, next) {
+  console.log('general_reward');
+	let sql = "select id as _id,amount,transtime,height from tx where `type` = 'vote-reward' and `to` = ? order by id desc limit 15";
+  let ret = await query(sql,  [req.query.addr]);
+  ret = JSON.parse(JSON.stringify(ret));
+  let data = [];
+  for (let index = 0; index < ret.length; index++) {
+    const e = ret[index];
+    let obj = {
+      '_id' : e._id.toString(),
+      'amount' : e.amount.toString(),
+      'height': e.height.toString(),
+      'time': moment(e.transtime * 1000).format("YYYY-MM-DD HH:mm:ss")
+    };
+    data.push(obj);
+  }
+  res.json(data);
+});
+
 
 let server = app.listen(7711, function () {
   let host = server.address().address;

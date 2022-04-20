@@ -116,11 +116,14 @@ app.get('/balance', async function (req, res, next) {
   console.log('balance', req.query.symbol);
   if (req.query.symbol == 'HAH') {
     let ret = await chain_method('getbalance', { 'address': req.query.address });
-    let json = { 'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout), 'balance': parseFloat(ret[0].avail) };
-    console.log(json);
+    let json = { 
+      'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout), 
+      'balance': parseFloat(ret[0].avail),
+      'locked': parseFloat(ret[0].locked)};
+    //console.log(json);
     res.json(json);
   } else {
-    res.json({ 'unconfirmed': 0, 'balance': 0 });
+    res.json({ 'unconfirmed': 0, 'balance': 0,'locked':0 });
   }
 });
 

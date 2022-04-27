@@ -119,11 +119,11 @@ app.get('/balance', async function (req, res, next) {
     let json = { 
       'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout), 
       'balance': parseFloat(ret[0].avail),
-      'locked': parseFloat(ret[0].locked)};
-    //console.log(json);
+      'locked': parseFloat(ret[0].locked),
+      'nonce': parseFloat(ret[0].nonce)}
     res.json(json);
   } else {
-    res.json({ 'unconfirmed': 0, 'balance': 0,'locked':0 });
+    res.json({ 'unconfirmed': 0, 'balance': 0,'locked':0,'nonce':0 });
   }
 });
 

@@ -110,7 +110,7 @@ app.post('/register', async function (req, res, next) {
 
 
 app.get('/balance', async function (req, res, next) {
-  //http://127.0.0.1:7711/balance?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+  //http://127.0.0.1:7711/balance?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=HAH
   //77f2b1217377f62cbb34c5b72b63c6c17fdb5e9e0b6173b4edcb19d03922c0f5
   //res.json({'address': req.query.address,'symbol': req.query.symbol});
   console.log('balance', req.query.symbol);
@@ -127,7 +127,7 @@ app.get('/balance', async function (req, res, next) {
   }
 });
 
-// http://127.0.0.1:7711/transaction?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=BBC
+// http://127.0.0.1:7711/transaction?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=HAH
 app.get('/transaction', async function (req, res, next) {
   console.log('transaction', req.query.address);
   let sql = "select txid as `hash`,`from` as fromAddress,`to` as toAddress,transtime as `timestamp`,1 as confirmed,fee as txFee, amount from tx \

@@ -340,13 +340,13 @@ app.get("/getUniswap", async function(req,res,next){
     if (ret[index].price <minPrice){minPrice =ret[index].price;}
     if(ret[index].price >maxPrice){maxPrice=ret[index].price;}
   }
-  let legendList=['Price'];
+  let legendList=['MNT Price'];
   let xAxisList=[];
   for(let index =times; index>0;index--){
     xAxisList.push(index);
   }
   var seriesList=[{
-    name:'Price',
+    name:'MNT Price',
     data:prices
   }]
   var charts={

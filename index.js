@@ -329,7 +329,7 @@ app.get('/blockstatistics', async function(req,res,next){
 });
 app.get("/getUniswap", async function(req,res,next){
   let times=parseInt(req.query.times);
-  let sql ="select * , FROM_UNIXTIME(timestamp,'%Y-%m-%d %H:%i:%s') as time  from (select *  from uniswap order by id desc limit ? ) a order by id";
+  let sql ="select * , FROM_UNIXTIME(timestamp,'%m-%d %H:%i:%s') as time  from (select *  from uniswap order by id desc limit ? ) a order by id";
   let ret=await query(sql,[times]);
   var prices=[];
   let minPrice=999999;

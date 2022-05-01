@@ -10,7 +10,7 @@ const moment = require('moment')
 
 const url = 'http://127.0.0.1:8812';
 const conn = mysql.createConnection({
-  host: '127.0.0.1',
+  host: '127.0.0.1',  
   port: '3306',
   user: 'hah',
   password: '1234qwer',
@@ -327,6 +327,38 @@ app.get('/blockstatistics', async function(req,res,next){
   }
   res.send(charts);
 });
+app.get("/getUniswap", async function(req,res,next){
+  let times=parseInt(req.query.times);
+  let sql ="select * , FROM_UNIXTIME(timestamp,'%Y-%m-%d %H:%i:%s') as time  from (select *  from uniswap order by id desc limit ? ) a order by id";
+  let ret=await query(sql,[times]);
+  var prices=[];
+  let minPrice=999999;
+  let maxPrice =0;
+  for(let index =0; index<ret.length;index++){
+    //console.log(ret[index].price);
+    prices.push({value:ret[index].price,dateTime:ret[index].time});
+    if (ret[index].price <minPrice){minPrice =ret[index].price;}
+    if(ret[index].price >maxPrice){maxPrice=ret[index].price;}
+  }
+  let legendList=['Price'];
+  let xAxisList=[];
+  for(let index =times; index>0;index--){
+    xAxisList.push(index);
+  }
+  var seriesList=[{
+    name:'Price',
+    data:prices
+  }]
+  var charts={
+    xAxis:xAxisList,
+    legend:legendList,
+    series:seriesList,
+    minPrice:minPrice,
+    maxPrice:maxPrice,
+   
+  }
+  res.send(charts);
+})
 
 
 let server = app.listen(7711, function () {

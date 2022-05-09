@@ -39,8 +39,8 @@ import time
 }
 '''
 addr = '1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws'
-importprivkey = '9ae89671cc1a74e9e404a16982ae48d21c56d4ad8278bc9755235a68fc841271'
-tx_hash = '1b22e893c087bbf6502cf0bcd46f1e81dfe51e50c75bdffffab8ce596be079e2'
+importprivkey = '492488599b3014f554863ffe844d684aa113a4a2f9b32666008e5481ff98d203'
+tx_hash = '349ea3c57272a802524f1c0397f8985992469014f3c6363f340080528d3165a2'
 sk = ed25519.SigningKey(unhexlify(importprivkey)[::-1])
 sign_data = sk.sign(unhexlify(tx_hash)[::-1])
 

@@ -113,10 +113,11 @@ app.get('/balance', async function (req, res, next) {
   //http://127.0.0.1:7711/balance?address=1yq024eeg375yvd3kc45swqpvfz0wcrsbpz2k9escysvq68dhy9vtqe58&symbol=HAH
   //77f2b1217377f62cbb34c5b72b63c6c17fdb5e9e0b6173b4edcb19d03922c0f5
   //res.json({'address': req.query.address,'symbol': req.query.symbol});
-  console.log('balance', req.query.symbol);
+  console.log('balance', req.query.address);
   //if (req.query.symbol == 'HAH')
   //{
     let ret = await chain_method('getbalance', { 'address': req.query.address });
+    console.log('balance', ret);
     let json = { 
       'unconfirmed': parseFloat(ret[0].unconfirmedin) - parseFloat(ret[0].unconfirmedout), 
       'balance': parseFloat(ret[0].avail),

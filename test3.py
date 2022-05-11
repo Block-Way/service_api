@@ -40,7 +40,7 @@ import time
 '''
 addr = '1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws'
 importprivkey = '492488599b3014f554863ffe844d684aa113a4a2f9b32666008e5481ff98d203'
-tx_hash = '349ea3c57272a802524f1c0397f8985992469014f3c6363f340080528d3165a2'
+tx_hash = '7895d5d662edded204c2e70849fa2c99a42097ae4183102bdb03003ac4af5631'
 sk = ed25519.SigningKey(unhexlify(importprivkey)[::-1])
 sign_data = sk.sign(unhexlify(tx_hash)[::-1])
 

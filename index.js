@@ -224,59 +224,7 @@ app.get('/listdelegatedetail', async function (req, res, next) {
   res.json(txdata);
 });
 
-// http://127.0.0.1:7711/mint?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
-app.get('/mint', async function (req, res, next) {
-  console.log('mint');
-  let sql = 'call mint(?)';
-  let ret = await query(sql,  [/*req.query.addr*/'1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws']);
-  ret = JSON.parse(JSON.stringify(ret[0][0]));
-  ret = {
-    'promotion_reward':ret.general_reward.toString(),
-    'stake_reward': ret.exp_reward.toString(),
-    'this_stake_reward'  : '0',
-    'this_balance': '0',
-    'min_balance': '0',
-    'best_balance': ret.max_reward.toString(),
-    'best_balance_reward': ret.min_reward.toString(),
-    'min_balance_reward': '0'
-  };
-  res.json(ret);
-});
 
-// http://127.0.0.1:7711/chart?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
-app.get('/chart', async function (req, res, next) {
-  console.log('chart');
-  let sql = "select amount,transtime,height from Tx where client_in = ? and `type` = 'vote-reward' order by id desc limit 15";
-  let ret = await query(sql,  [req.query.addr]);
-  ret = JSON.parse(JSON.stringify(ret));
-  let data = [];
-  for (let index = 0; index < ret.length; index++) {
-    const element = ret[index];
-    data.push({'balance' : element.transtime.toString(),'reward' : element.amount.toString(),'user_balance':false});
-  }
-  res.json(data);
-});
-
-// general_reward
-// http://127.0.0.1:7711/general_reward?addr=1231kgws0rhjtfewv57jegfe5bp4dncax60szxk8f4y546jsfkap3t5ws
-app.get('/general_reward', async function (req, res, next) {
-  console.log('general_reward');
-	let sql = "select id as _id,amount,transtime,height from tx where `type` = 'vote-reward' and `to` = ? order by id desc limit 15";
-  let ret = await query(sql,  [req.query.addr]);
-  ret = JSON.parse(JSON.stringify(ret));
-  let data = [];
-  for (let index = 0; index < ret.length; index++) {
-    const e = ret[index];
-    let obj = {
-      '_id' : e._id.toString(),
-      'amount' : e.amount.toString(),
-      'height': e.height.toString(),
-      'time': moment(e.transtime * 1000).format("YYYY-MM-DD HH:mm:ss")
-    };
-    data.push(obj);
-  }
-  res.json(data);
-});
 app.get('/blockstatistics', async function(req,res,next){
   //let xAxisSql="select group_concat(concat('\\'',reward_date, '\\'')) as reward_date from (select distinct reward_date from blockstatistics where datediff(now(),str_to_date(reward_date,'%Y-%m-%d') ) < 31 order by reward_date)a";
   let xAxisSql="select reward_date from (select distinct reward_date from blockstatistics where datediff(now(),str_to_date(reward_date,'%Y-%m-%d') ) < ? order by reward_date)a";
@@ -329,39 +277,6 @@ app.get('/blockstatistics', async function(req,res,next){
   }
   res.send(charts);
 });
-app.get("/getUniswap", async function(req,res,next){
-  let times=parseInt(req.query.times);
-  let sql ="select * , FROM_UNIXTIME(timestamp,'%m-%d %H:%i') as time  from (select *  from uniswap order by id desc limit ? ) a order by id";
-  let ret=await query(sql,[times]);
-  var prices=[];
-  let minPrice=999999;
-  let maxPrice =0;
-  for(let index =0; index<ret.length;index++){
-    //console.log(ret[index].price);
-    prices.push({value:ret[index].price,dateTime:ret[index].time});
-    if (ret[index].price <minPrice){minPrice =ret[index].price;}
-    if(ret[index].price >maxPrice){maxPrice=ret[index].price;}
-  }
-  let legendList=['MNT Price'];
-  let xAxisList=[];
-  for(let index =times; index>0;index--){
-    xAxisList.push(index);
-  }
-  var seriesList=[{
-    name:'MNT Price',
-    data:prices
-  }]
-  var charts={
-    xAxis:xAxisList,
-    legend:legendList,
-    series:seriesList,
-    minPrice:minPrice,
-    maxPrice:maxPrice,
-   
-  }
-  res.send(charts);
-})
-
 
 let server = app.listen(7711, function () {
   let host = server.address().address;
